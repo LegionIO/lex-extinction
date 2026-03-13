@@ -18,7 +18,7 @@ module Legion
             end
           end
 
-          def deescalate(target_level: 0, authority:, reason:, **)
+          def deescalate(authority:, reason:, target_level: 0, **)
             result = protocol_state.deescalate(target_level, authority: authority, reason: reason)
             case result
             when :deescalated
