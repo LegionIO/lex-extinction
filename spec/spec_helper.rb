@@ -1,6 +1,16 @@
 # frozen_string_literal: true
 
 require 'bundler/setup'
+
+module Legion
+  module Logging
+    def self.debug(_msg); end
+    def self.info(_msg); end
+    def self.warn(_msg); end
+    def self.error(_msg); end
+  end
+end
+
 require 'legion/extensions/extinction'
 
 RSpec.configure do |config|
