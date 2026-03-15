@@ -26,6 +26,8 @@ lib/legion/extensions/extinction/
     protocol_state.rb  # ProtocolState class - current_level, active, history
   runners/
     extinction.rb      # escalate, deescalate, extinction_status, check_reversibility
+  actors/
+    protocol_monitor.rb  # ProtocolMonitor - Every 300s, calls extinction_status for periodic observability
 spec/
   legion/extensions/extinction/
     runners/
@@ -71,6 +73,16 @@ The runner translates the symbol results from ProtocolState into response hashes
 - `:escalated` -> `{ escalated: true, level: level, info: level_info }`
 - anything else -> `{ escalated: false, reason: result }`
 
+## Actors
+
+| Actor | Interval | Runner | Method | Purpose |
+|---|---|---|---|---|
+| `ProtocolMonitor` | Every 300s | `Runners::Extinction` | `extinction_status` | Periodic observability — logs current protocol level and active flag |
+
+### ProtocolMonitor
+
+Every 5 minutes calls `extinction_status`, which reads `protocol_state.to_h` and emits a debug log line with `level` and `active`. No state mutations — purely for observability. Produces a heartbeat in logs that confirms the extinction protocol is being monitored even when inactive. Uses the existing `extinction_status` runner method; no new runner code was added.
+
 ## Integration Points
 
 - **lex-governance**: governance votes can trigger escalation at any level
@@ -84,3 +96,4 @@ The runner translates the symbol results from ProtocolState into response hashes
 - De-escalation does not require matching the authority that escalated; any authority with deescalation rights at the current level could de-escalate (currently authority is just passed through for logging, not validated against who escalated)
 - Level 4 cannot be reversed via `deescalate` due to the `:irreversible` check
 - History is not capped in the current implementation
+- `ProtocolMonitor` runs even when the protocol is inactive (level 0, `active: false`), providing a steady heartbeat log at debug level
