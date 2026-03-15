@@ -75,6 +75,12 @@ Legion::Extensions::Extinction::Runners::Extinction.check_reversibility(level: 4
 # => { level: 4, reversible: false, authority: :physical_keyholders }
 ```
 
+## Actors
+
+| Actor | Interval | Description |
+|-------|----------|-------------|
+| `ProtocolMonitor` | Every 300s | Periodically reads extinction protocol state and emits a debug log heartbeat confirming the containment system is being monitored |
+
 ## Development
 
 ```bash
