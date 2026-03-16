@@ -12,3 +12,10 @@ module Legion
     end
   end
 end
+
+if defined?(Legion::Data::Local)
+  Legion::Data::Local.register_migrations(
+    name: :extinction,
+    path: File.join(__dir__, 'extinction', 'local_migrations')
+  )
+end
