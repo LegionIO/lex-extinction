@@ -20,7 +20,7 @@ RSpec.describe Legion::Extensions::Extinction::Actor::ProtocolMonitor do
   end
 
   describe '#runner_function' do
-    it { expect(actor.runner_function).to eq 'extinction_status' }
+    it { expect(actor.runner_function).to eq 'monitor_protocol' }
   end
 
   describe '#time' do

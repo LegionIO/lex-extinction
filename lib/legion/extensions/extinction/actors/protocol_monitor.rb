@@ -12,7 +12,7 @@ module Legion
           end
 
           def runner_function
-            'extinction_status'
+            'monitor_protocol'
           end
 
           def time

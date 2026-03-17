@@ -136,6 +136,18 @@ RSpec.describe Legion::Extensions::Extinction::Helpers::ProtocolState do
         state.escalate(2, authority: :governance_council, reason: 'r2')
         expect(state.history.size).to eq(2)
       end
+
+      it 'calls save_to_local after escalation' do
+        expect(state).to receive(:save_to_local)
+        state.escalate(1, authority: :governance_council, reason: 'test')
+      end
+
+      it 'trims history beyond MAX_HISTORY' do
+        s = described_class.new
+        s.instance_variable_set(:@history, Array.new(510) { { action: :escalate, at: Time.now } })
+        s.send(:trim_history)
+        expect(s.history.size).to eq(500)
+      end
     end
   end
 
@@ -179,6 +191,24 @@ RSpec.describe Legion::Extensions::Extinction::Helpers::ProtocolState do
       end
     end
 
+    context 'with insufficient authority for deescalation' do
+      before do
+        state.escalate(1, authority: :governance_council, reason: 's1')
+        state.escalate(2, authority: :governance_council, reason: 's2')
+        state.escalate(3, authority: :council_plus_executive, reason: 's3')
+      end
+
+      it 'rejects wrong authority for level 3' do
+        result = state.deescalate(0, authority: :governance_council, reason: 'test')
+        expect(result).to eq(:insufficient_authority)
+      end
+
+      it 'accepts correct authority for level 3' do
+        result = state.deescalate(0, authority: :council_plus_executive, reason: 'test')
+        expect(result).to eq(:deescalated)
+      end
+    end
+
     context 'with valid de-escalation' do
       before { state.escalate(2, authority: :governance_council, reason: 'setup') }
 
@@ -217,6 +247,11 @@ RSpec.describe Legion::Extensions::Extinction::Helpers::ProtocolState do
       it 'records a Time in the deescalate history entry' do
         state.deescalate(0, authority: :governance_council, reason: 'resolved')
         expect(state.history.last[:at]).to be_a(Time)
+      end
+
+      it 'calls save_to_local after deescalation' do
+        expect(state).to receive(:save_to_local)
+        state.deescalate(0, authority: :governance_council, reason: 'test')
       end
     end
   end

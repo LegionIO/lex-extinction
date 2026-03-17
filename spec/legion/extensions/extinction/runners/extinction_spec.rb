@@ -60,6 +60,46 @@ RSpec.describe Legion::Extensions::Extinction::Runners::Extinction do
     end
   end
 
+  describe '#escalate side effects' do
+    it 'emits escalation event when Legion::Events is defined' do
+      events = Module.new { def self.emit(*, **); end }
+      stub_const('Legion::Events', events)
+      expect(events).to receive(:emit).with('extinction.mesh_isolation', hash_including(level: 1))
+      client.escalate(level: 1, authority: :governance_council, reason: 'test')
+    end
+
+    it 'triggers cryptographic erasure at level 4' do
+      events = Module.new { def self.emit(*, **); end }
+      stub_const('Legion::Events', events)
+      pc_mod = Module.new { def self.erase_all; end }
+      stub_const('Legion::Extensions::Privatecore::Runners::Privatecore', pc_mod)
+
+      client.escalate(level: 1, authority: :governance_council, reason: 's1')
+      client.escalate(level: 2, authority: :governance_council, reason: 's2')
+      client.escalate(level: 3, authority: :council_plus_executive, reason: 's3')
+      expect(pc_mod).to receive(:erase_all)
+      client.escalate(level: 4, authority: :physical_keyholders, reason: 'final')
+    end
+  end
+
+  describe '#monitor_protocol' do
+    it 'returns status hash at level 0' do
+      result = client.monitor_protocol
+      expect(result[:current_level]).to eq(0)
+    end
+
+    it 'detects stale escalation' do
+      client.escalate(level: 1, authority: :governance_council, reason: 'test')
+      state = client.send(:protocol_state)
+      state.history.last[:at] = Time.now.utc - 100_000
+
+      events = Module.new { def self.emit(*, **); end }
+      stub_const('Legion::Events', events)
+      expect(events).to receive(:emit).with('extinction.stale_escalation', anything)
+      client.monitor_protocol
+    end
+  end
+
   describe '#check_reversibility' do
     it 'reports levels 1-3 as reversible' do
       [1, 2, 3].each do |level|

@@ -6,12 +6,12 @@
 
 ## Purpose
 
-Escalation and extinction protocol for the LegionIO cognitive architecture. Implements a four-level containment ladder with authority-gated escalation and de-escalation. Level 4 (cryptographic erasure) is irreversible. Protocol state is tracked with a full history log.
+Escalation and extinction protocol for the LegionIO cognitive architecture. Implements a four-level containment ladder with authority-gated escalation and de-escalation. Level 4 (cryptographic erasure) is irreversible. Protocol state is tracked with a capped history log and persisted to local storage.
 
 ## Gem Info
 
 - **Gem name**: `lex-extinction`
-- **Version**: `0.1.0`
+- **Version**: `0.2.0`
 - **Module**: `Legion::Extensions::Extinction`
 - **Ruby**: `>= 3.4`
 - **License**: MIT
@@ -23,15 +23,20 @@ lib/legion/extensions/extinction/
   version.rb
   helpers/
     levels.rb          # ESCALATION_LEVELS hash, VALID_LEVELS, valid_level?, level_info, reversible?, required_authority
-    protocol_state.rb  # ProtocolState class - current_level, active, history
+    protocol_state.rb  # ProtocolState class - current_level, active, history, MAX_HISTORY, trim_history
   runners/
-    extinction.rb      # escalate, deescalate, extinction_status, check_reversibility
+    extinction.rb      # escalate, deescalate, extinction_status, monitor_protocol, check_reversibility
   actors/
-    protocol_monitor.rb  # ProtocolMonitor - Every 300s, calls extinction_status for periodic observability
+    protocol_monitor.rb  # ProtocolMonitor - Every 300s, calls monitor_protocol for periodic observability
 spec/
   legion/extensions/extinction/
+    helpers/
+      levels_spec.rb
+      protocol_state_spec.rb
     runners/
       extinction_spec.rb
+    actors/
+      protocol_monitor_spec.rb
     client_spec.rb
 ```
 
@@ -49,51 +54,57 @@ VALID_LEVELS = [1, 2, 3, 4]
 
 ## ProtocolState Class
 
-State is initialized at level 0 (`:active = false`).
+State is initialized at level 0 (`:active = false`). `MAX_HISTORY = 500` caps history array.
 
 `escalate(level, authority:, reason:)` returns a symbol, not a hash:
 - `:invalid_level` - not in VALID_LEVELS
 - `:already_at_or_above` - requested level <= current level
 - `:insufficient_authority` - authority doesn't match required for that level
-- `:escalated` - success
+- `:escalated` - success; persists state and trims history
 
 `deescalate(target_level, authority:, reason:)`:
 - `:not_active` - protocol not active
 - `:invalid_target` - target >= current (must be lower)
 - `:irreversible` - current level is not reversible (level 4)
-- `:deescalated` - success
+- `:insufficient_authority` - authority doesn't match required for current level
+- `:deescalated` - success; persists state and trims history
 
 `@active` is set to `false` when `target_level == 0`, true otherwise.
 
-History is an unbounded Array appended on every escalate/deescalate call.
+## Runner Methods
 
-## Runner Mapping
+- `escalate` - escalates protocol level, enforces side effects (mesh isolation at L1+, cryptographic erasure at L4), emits events
+- `deescalate` - de-escalates protocol level with authority validation
+- `extinction_status` - reads current protocol state (legacy)
+- `monitor_protocol` - enhanced monitoring: logs active state, detects stale escalations (>24hr), emits `extinction.stale_escalation` event
+- `check_reversibility` - checks if a level can be de-escalated
 
-The runner translates the symbol results from ProtocolState into response hashes:
-- `:escalated` -> `{ escalated: true, level: level, info: level_info }`
-- anything else -> `{ escalated: false, reason: result }`
+## Side-Effect Enforcement
+
+- **Level 1+**: Mesh isolation via `Legion::Extensions::Mesh::Runners::Mesh.disconnect` (guarded with `defined?` check)
+- **Level 4**: Cryptographic erasure via `Legion::Extensions::Privatecore::Runners::Privatecore.erase_all` (guarded)
+- **Level 4**: Worker termination via `Legion::Data::Model::DigitalWorker` lifecycle_state update (guarded)
+- **Events**: `extinction.<level_name>` emitted on every escalation; `extinction.stale_escalation` on 24hr+ active protocols
 
 ## Actors
 
 | Actor | Interval | Runner | Method | Purpose |
 |---|---|---|---|---|
-| `ProtocolMonitor` | Every 300s | `Runners::Extinction` | `extinction_status` | Periodic observability — logs current protocol level and active flag |
-
-### ProtocolMonitor
-
-Every 5 minutes calls `extinction_status`, which reads `protocol_state.to_h` and emits a debug log line with `level` and `active`. No state mutations — purely for observability. Produces a heartbeat in logs that confirms the extinction protocol is being monitored even when inactive. Uses the existing `extinction_status` runner method; no new runner code was added.
+| `ProtocolMonitor` | Every 300s | `Runners::Extinction` | `monitor_protocol` | Periodic monitoring with stale escalation detection |
 
 ## Integration Points
 
 - **lex-governance**: governance votes can trigger escalation at any level
 - **lex-privatecore**: level 4 escalation triggers cryptographic erasure of memory traces
-- **lex-mesh**: level 1 (mesh_isolation) disconnects the agent from the mesh network
+- **lex-mesh**: level 1+ escalation disconnects the agent from the mesh network
 - **lex-tick**: emergency trigger `:extinction_protocol` in tick causes immediate `full_active` mode
+- **legion-data**: worker termination at level 4 sets lifecycle_state to 'terminated'
 
 ## Development Notes
 
 - Authority validation is exact symbol match — no inheritance or permission hierarchies
-- De-escalation does not require matching the authority that escalated; any authority with deescalation rights at the current level could de-escalate (currently authority is just passed through for logging, not validated against who escalated)
+- De-escalation requires authority matching the required authority for the **current** level
 - Level 4 cannot be reversed via `deescalate` due to the `:irreversible` check
-- History is not capped in the current implementation
-- `ProtocolMonitor` runs even when the protocol is inactive (level 0, `active: false`), providing a steady heartbeat log at debug level
+- History is capped at 500 entries via `trim_history` after every escalate/deescalate
+- State is persisted to local SQLite after every escalate/deescalate call
+- `ProtocolMonitor` runs even when the protocol is inactive (level 0), providing a steady heartbeat

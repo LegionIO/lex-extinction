@@ -7,6 +7,8 @@ module Legion
     module Extinction
       module Helpers
         class ProtocolState
+          MAX_HISTORY = 500
+
           attr_reader :current_level, :history, :active
 
           def initialize
@@ -27,6 +29,8 @@ module Legion
               action: :escalate, level: level, authority: authority,
               reason: reason, at: Time.now.utc
             }
+            trim_history
+            save_to_local
             :escalated
           end
 
@@ -34,6 +38,7 @@ module Legion
             return :not_active unless @active
             return :invalid_target if target_level >= @current_level
             return :irreversible unless Levels.reversible?(@current_level)
+            return :insufficient_authority unless authority == Levels.required_authority(@current_level)
 
             @current_level = target_level
             @active = target_level.positive?
@@ -41,6 +46,8 @@ module Legion
               action: :deescalate, level: target_level, authority: authority,
               reason: reason, at: Time.now.utc
             }
+            trim_history
+            save_to_local
             :deescalated
           end
 
@@ -64,8 +71,8 @@ module Legion
               updated_at:    Time.now.utc
             }
             db = Legion::Data::Local.connection
-            if db[:extinction_state].where(id: 1).count.positive?
-              db[:extinction_state].where(id: 1).update(row.reject { |k, _| k == :id })
+            if db[:extinction_state].where(id: 1).any?
+              db[:extinction_state].where(id: 1).update(row.except(:id))
             else
               db[:extinction_state].insert(row)
             end
@@ -75,6 +82,10 @@ module Legion
 
           private
 
+          def trim_history
+            @history = @history.last(MAX_HISTORY) if @history.size > MAX_HISTORY
+          end
+
           def load_from_local
             return unless defined?(Legion::Data::Local) && Legion::Data::Local.connected?
 
@@ -83,7 +94,7 @@ module Legion
 
             db_level = row[:current_level].to_i
             @current_level = [db_level, @current_level].max
-            @active = row[:active] == true || row[:active] == 1
+            @active = [true, 1].include?(row[:active])
             @history = parse_history(row[:history])
           rescue StandardError
             nil
