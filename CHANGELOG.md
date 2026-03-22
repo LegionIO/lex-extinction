@@ -1,0 +1,19 @@
+# Changelog
+
+## [0.2.0] - 2026-03-22
+
+### Added
+- Initial release of lex-extinction: five-level agent lifecycle termination protocol
+- `Helpers::Levels` with frozen LEVELS constant, authority and reversibility lookups
+- `Helpers::ProtocolState` state machine with escalate/deescalate, history (capped at 500), and optional local persistence
+- `Helpers::Archiver` for capturing agent state before termination, with optional Legion::Data::Local persistence
+- `Runners::Extinction` module with escalate, deescalate, extinction_status, monitor_protocol, archive_agent, and full_termination
+- `Actors::ProtocolMonitor` self-contained Every actor (300s interval, guarded by defined?(Legion::Extensions::Actors::Every))
+- `Client` standalone class including all runner methods
+- `Settings` module with DEFAULTS hash and settings accessor with Legion::Settings fallback
+- Governance gate on full_termination (delegates to Legion::Extensions::Governance when loaded)
+- Audit trail via Legion::Extensions::Audit when loaded
+- Event emission via Legion::Events when loaded
+- Side effects per escalation level: mesh isolation (1), capability suspension (2), memory lockdown (3), cryptographic erasure (4)
+- Full guard pattern for all optional dependencies
+- 47 RSpec examples, 0 failures

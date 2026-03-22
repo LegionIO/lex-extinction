@@ -1,0 +1,29 @@
+# frozen_string_literal: true
+
+require_relative 'lib/legion/extensions/extinction/version'
+
+Gem::Specification.new do |spec|
+  spec.name          = 'lex-extinction'
+  spec.version       = Legion::Extensions::Extinction::VERSION
+  spec.authors       = ['Esity']
+  spec.email         = ['matt@esity.io']
+  spec.summary       = 'Agent lifecycle termination protocol for LegionIO'
+  spec.description   = 'Five-level extinction protocol with archival, audit trail, governance gates, and configurable settings'
+  spec.homepage      = 'https://github.com/LegionIO/lex-extinction'
+  spec.license       = 'MIT'
+  spec.required_ruby_version = '>= 3.4'
+
+  spec.metadata['homepage_uri']        = spec.homepage
+  spec.metadata['source_code_uri']     = 'https://github.com/LegionIO/lex-extinction'
+  spec.metadata['documentation_uri']   = 'https://github.com/LegionIO/lex-extinction'
+  spec.metadata['changelog_uri']       = 'https://github.com/LegionIO/lex-extinction'
+  spec.metadata['bug_tracker_uri']     = 'https://github.com/LegionIO/lex-extinction/issues'
+  spec.metadata['rubygems_mfa_required'] = 'true'
+
+  spec.files         = Dir['lib/**/*', 'LICENSE', 'README.md']
+  spec.require_paths = ['lib']
+
+  spec.add_development_dependency 'rspec', '~> 3.12'
+  spec.add_development_dependency 'rubocop', '~> 1.62'
+  spec.add_development_dependency 'rubocop-rspec', '~> 2.25'
+end
