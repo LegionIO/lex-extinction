@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.2] - 2026-03-22
+
+### Changed
+- Add legion-logging, legion-settings, legion-json, legion-cache, legion-crypt, legion-data, and legion-transport as runtime dependencies
+- Update spec_helper with real sub-gem helper stubs replacing hand-rolled Legion::Logging stub
+
 ## [0.2.0] - 2026-03-22
 
 ### Added
