@@ -1,0 +1,7 @@
+# Auto-generated from team-config.yml
+# Team: agentic
+#
+# To apply: scripts/apply-codeowners.sh lex-extinction
+
+* @LegionIO/maintainers
+* @LegionIO/agentic
