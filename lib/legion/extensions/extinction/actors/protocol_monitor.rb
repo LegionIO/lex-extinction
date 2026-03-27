@@ -16,7 +16,8 @@ module Legion
 
             def time
               Legion::Extensions::Extinction::Settings.setting(:monitor_interval)
-            rescue StandardError
+            rescue StandardError => e
+              log.debug("monitor_interval setting unavailable: #{e.message}")
               300
             end
 

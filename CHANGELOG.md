@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.8] - 2026-03-27
+
+### Fixed
+- Capture exception in `ProtocolMonitor#time` rescue block (`rescue StandardError => e`) and log debug message to satisfy CI Rescue Logging lint
+
 ## [0.2.7] - 2026-03-27
 
 ### Fixed
