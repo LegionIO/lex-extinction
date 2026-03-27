@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.4] - 2026-03-27
+
+### Fixed
+- `data_required?` and `remote_invocable?` defined as proper `def self.` methods instead of calling the method with an argument
+
 ## [0.2.3] - 2026-03-26
 
 ### Changed

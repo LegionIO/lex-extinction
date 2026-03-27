@@ -14,13 +14,9 @@ module Legion
     module Extinction
       extend Legion::Extensions::Core if defined?(Legion::Extensions::Core)
 
-      def self.data_required?
-        false
-      end
+      def self.data_required? = false
 
-      def self.remote_invocable?
-        false
-      end
+      def self.remote_invocable? = false
     end
   end
 end
