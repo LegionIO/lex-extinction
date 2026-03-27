@@ -48,8 +48,14 @@ module Legion
             end
             @archives << record
           rescue StandardError => e
-            Legion::Logging.warn "[extinction] archive persist failed: #{e.message}" if defined?(Legion::Logging)
+            log&.warn "[extinction] archive persist failed: #{e.message}"
             @archives << record
+          end
+
+          def log
+            return unless defined?(Legion::Logging)
+
+            Legion::Logging
           end
         end
       end

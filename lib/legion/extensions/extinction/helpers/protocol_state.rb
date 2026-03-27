@@ -91,7 +91,7 @@ module Legion
               @store[:protocol_state] = data
             end
           rescue StandardError => e
-            Legion::Logging.warn "[extinction] protocol_state save failed: #{e.message}" if defined?(Legion::Logging)
+            log&.warn "[extinction] protocol_state save failed: #{e.message}"
           end
 
           def load_from_local
@@ -106,7 +106,13 @@ module Legion
             raw_history    = data[:history] || data['history'] || []
             @history       = raw_history
           rescue StandardError => e
-            Legion::Logging.warn "[extinction] protocol_state load failed: #{e.message}" if defined?(Legion::Logging)
+            log&.warn "[extinction] protocol_state load failed: #{e.message}"
+          end
+
+          def log
+            return unless defined?(Legion::Logging)
+
+            Legion::Logging
           end
         end
       end

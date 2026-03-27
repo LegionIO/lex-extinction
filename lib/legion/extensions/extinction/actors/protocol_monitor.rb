@@ -41,7 +41,7 @@ module Legion
               last_change = state[:last_change]
               stale       = check_stale(last_change)
 
-              Legion::Logging.debug "[extinction] monitor_protocol: level=#{state[:current_level]} stale=#{stale}" if defined?(Legion::Logging)
+              log&.debug "[extinction] monitor_protocol: level=#{state[:current_level]} stale=#{stale}"
 
               {
                 success:    true,
@@ -69,6 +69,12 @@ module Legion
               threshold_hours = Legion::Extensions::Extinction::Settings.setting(:stale_threshold_hours)
               changed_at      = Time.parse(last_change[:at]) rescue nil # rubocop:disable Style/RescueModifier
               changed_at && (Time.now.utc - changed_at) > (threshold_hours * 3600)
+            end
+
+            def log
+              return unless defined?(Legion::Logging)
+
+              Legion::Logging
             end
           end
         end

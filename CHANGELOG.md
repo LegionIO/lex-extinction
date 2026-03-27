@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.6] - 2026-03-27
+
+### Fixed
+- Replace direct `Legion::Logging.*` calls with `log&.*` (per-extension tagged logger) in all lib files to pass Helper Migration CI lint
+
 ## [0.2.5] - 2026-03-27
 
 ### Fixed
