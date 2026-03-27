@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.3] - 2026-03-26
+
+### Changed
+- fix remote_invocable? and data_required? to use class methods for local dispatch
+
 ## [0.2.2] - 2026-03-22
 
 ### Changed
