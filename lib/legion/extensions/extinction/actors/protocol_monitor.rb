@@ -3,7 +3,7 @@
 module Legion
   module Extensions
     module Extinction
-      module Actors
+      module Actor
         if defined?(Legion::Extensions::Actors::Every)
           class ProtocolMonitor < Legion::Extensions::Actors::Every
             def runner_class

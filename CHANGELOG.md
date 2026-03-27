@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.5] - 2026-03-27
+
+### Fixed
+- ProtocolMonitor actor: `module Actors` → `module Actor` to match framework convention
+
 ## [0.2.4] - 2026-03-27
 
 ### Fixed
