@@ -91,7 +91,7 @@ module Legion
               @store[:protocol_state] = data
             end
           rescue StandardError => e
-            log&.warn "[extinction] protocol_state save failed: #{e.message}"
+            log.warn "[extinction] protocol_state save failed: #{e.message}"
           end
 
           def load_from_local
@@ -106,13 +106,15 @@ module Legion
             raw_history    = data[:history] || data['history'] || []
             @history       = raw_history
           rescue StandardError => e
-            log&.warn "[extinction] protocol_state load failed: #{e.message}"
+            log.warn "[extinction] protocol_state load failed: #{e.message}"
           end
 
           def log
-            return unless defined?(Legion::Logging)
+            return Legion::Logging if defined?(Legion::Logging)
 
-            Legion::Logging
+            @log ||= Object.new.tap do |nl|
+              %i[debug info warn error fatal].each { |m| nl.define_singleton_method(m) { |*| nil } }
+            end
           end
         end
       end

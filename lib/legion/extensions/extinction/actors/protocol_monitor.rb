@@ -41,7 +41,7 @@ module Legion
               last_change = state[:last_change]
               stale       = check_stale(last_change)
 
-              log&.debug "[extinction] monitor_protocol: level=#{state[:current_level]} stale=#{stale}"
+              log.debug "[extinction] monitor_protocol: level=#{state[:current_level]} stale=#{stale}"
 
               {
                 success:    true,
@@ -72,9 +72,11 @@ module Legion
             end
 
             def log
-              return unless defined?(Legion::Logging)
+              return Legion::Logging if defined?(Legion::Logging)
 
-              Legion::Logging
+              @log ||= Object.new.tap do |nl|
+                %i[debug info warn error fatal].each { |m| nl.define_singleton_method(m) { |*| nil } }
+              end
             end
           end
         end

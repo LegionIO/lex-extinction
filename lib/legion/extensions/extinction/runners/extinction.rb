@@ -95,14 +95,14 @@ module Legion
           def enforce_escalation_effects(level)
             case level
             when 1
-              log&.info '[extinction] mesh isolation: disconnecting from mesh' if defined?(Legion::Extensions::Mesh)
+              log.info '[extinction] mesh isolation: disconnecting from mesh' if defined?(Legion::Extensions::Mesh)
             when 2
-              log&.info '[extinction] capability suspension: suspending non-essential capabilities'
+              log.info '[extinction] capability suspension: suspending non-essential capabilities'
             when 3
-              log&.warn '[extinction] memory lockdown: locking all memory writes'
-              log&.warn '[extinction] notifying privatecore of memory lockdown' if defined?(Legion::Extensions::Privatecore)
+              log.warn '[extinction] memory lockdown: locking all memory writes'
+              log.warn '[extinction] notifying privatecore of memory lockdown' if defined?(Legion::Extensions::Privatecore)
             when 4
-              log&.warn '[extinction] cryptographic erasure: beginning irreversible termination'
+              log.warn '[extinction] cryptographic erasure: beginning irreversible termination'
               trigger_cryptographic_erasure
             end
           end
@@ -112,21 +112,21 @@ module Legion
               client = Legion::Extensions::Privatecore::Client.new if defined?(Legion::Extensions::Privatecore::Client)
               client&.full_erasure(traces: [], agent_id: 'self')
             end
-            log&.warn '[extinction] cryptographic erasure complete'
+            log.warn '[extinction] cryptographic erasure complete'
           end
 
           def emit_escalation_event(level, authority, reason)
             payload = { level: level, authority: authority, reason: reason, at: Time.now.utc.iso8601 }
             Legion::Events.emit('extinction.escalated', payload) if defined?(Legion::Events)
           rescue StandardError => e
-            log&.warn "[extinction] event emit failed: #{e.message}"
+            log.warn "[extinction] event emit failed: #{e.message}"
           end
 
           def emit_deescalation_event(target_level, authority, reason)
             payload = { target_level: target_level, authority: authority, reason: reason, at: Time.now.utc.iso8601 }
             Legion::Events.emit('extinction.deescalated', payload) if defined?(Legion::Events)
           rescue StandardError => e
-            log&.warn "[extinction] event emit failed: #{e.message}"
+            log.warn "[extinction] event emit failed: #{e.message}"
           end
 
           def governance_check(authority:, _reason: nil)
@@ -147,7 +147,7 @@ module Legion
               { success: false, reason: :governance_blocked, details: review[:reasons] }
             end
           rescue StandardError => e
-            log&.warn "[extinction] governance check failed: #{e.message}"
+            log.warn "[extinction] governance check failed: #{e.message}"
             { success: true }
           end
 
@@ -161,13 +161,15 @@ module Legion
               details:     details
             )
           rescue StandardError => e
-            log&.warn "[extinction] audit record failed: #{e.message}"
+            log.warn "[extinction] audit record failed: #{e.message}"
           end
 
           def log
-            return unless defined?(Legion::Logging)
+            return Legion::Logging if defined?(Legion::Logging)
 
-            Legion::Logging
+            @log ||= Object.new.tap do |nl|
+              %i[debug info warn error fatal].each { |m| nl.define_singleton_method(m) { |*| nil } }
+            end
           end
         end
       end

@@ -48,14 +48,16 @@ module Legion
             end
             @archives << record
           rescue StandardError => e
-            log&.warn "[extinction] archive persist failed: #{e.message}"
+            log.warn "[extinction] archive persist failed: #{e.message}"
             @archives << record
           end
 
           def log
-            return unless defined?(Legion::Logging)
+            return Legion::Logging if defined?(Legion::Logging)
 
-            Legion::Logging
+            @log ||= Object.new.tap do |nl|
+              %i[debug info warn error fatal].each { |m| nl.define_singleton_method(m) { |*| nil } }
+            end
           end
         end
       end

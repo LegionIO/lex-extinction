@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.7] - 2026-03-27
+
+### Fixed
+- Replace `log&.method` safe-navigation calls with `log.method` so CI "Rescue Logging" regex (`\blog\.`) matches all log calls in rescue blocks
+
 ## [0.2.6] - 2026-03-27
 
 ### Fixed
