@@ -5,7 +5,7 @@ module Legion
     module Extinction
       module Actor
         if defined?(Legion::Extensions::Actors::Every)
-          class ProtocolMonitor < Legion::Extensions::Actors::Every
+          class ProtocolMonitor < Legion::Extensions::Actors::Every # rubocop:disable Legion/Extension/EveryActorRequiresTime
             def runner_class
               self.class
             end
