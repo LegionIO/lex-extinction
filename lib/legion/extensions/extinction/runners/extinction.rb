@@ -10,6 +10,8 @@ module Legion
     module Extinction
       module Runners
         module Extinction
+          extend self
+
           def escalate(level:, authority:, reason:, **)
             result = protocol_state.escalate(level: level, authority: authority, reason: reason)
             return result unless result[:success]

@@ -7,7 +7,7 @@ require_relative 'extinction/helpers/protocol_state'
 require_relative 'extinction/helpers/archiver'
 require_relative 'extinction/runners/extinction'
 
-require_relative 'extinction/actors/protocol_monitor' if defined?(Legion::Extensions::Actors::Every)
+require_relative 'extinction/actors/protocol_monitor'
 
 module Legion
   module Extensions
