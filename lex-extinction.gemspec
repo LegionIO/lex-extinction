@@ -32,6 +32,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'legion-transport', '>= 1.3.9'
 
   spec.add_development_dependency 'rspec', '~> 3.12'
-  spec.add_development_dependency 'rubocop', '~> 1.62'
-  spec.add_development_dependency 'rubocop-rspec', '~> 2.25'
+  spec.add_development_dependency 'rubocop'
+  spec.add_development_dependency 'rubocop-rspec'
 end
