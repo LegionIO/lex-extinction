@@ -17,6 +17,18 @@ module Legion
       def self.data_required? = false
 
       def self.remote_invocable? = false
+
+      def self.mcp_tools?
+        false
+      end
+
+      def self.mcp_tools_deferred?
+        false
+      end
+
+      def self.transport_required?
+        false
+      end
     end
   end
 end
