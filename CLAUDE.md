@@ -1,8 +1,8 @@
 # lex-extinction: Containment and Termination Protocol
 
 **Level 3 Documentation**
-- **Parent**: `/Users/miverso2/rubymine/legion/extensions-agentic/CLAUDE.md`
-- **Grandparent**: `/Users/miverso2/rubymine/legion/CLAUDE.md`
+- **Parent**: `../CLAUDE.md`
+- **Grandparent**: `../../CLAUDE.md`
 
 ## Purpose
 
@@ -78,14 +78,30 @@ extinction:
   max_history: 500                  # max entries in ProtocolState history
 ```
 
+## Dependencies
+
+**Runtime** (from gemspec):
+- `legion-cache` >= 1.3.11
+- `legion-crypt` >= 1.4.9
+- `legion-data` >= 1.4.17
+- `legion-json` >= 1.2.1
+- `legion-logging` >= 1.3.2
+- `legion-settings` >= 1.3.14
+- `legion-transport` >= 1.3.9
+
+**Optional at runtime** (guarded with `defined?`):
+- `lex-privatecore` — level 4 triggers `Privatecore::Client#full_erasure`
+- `lex-governance` (via `Legion::Extensions::Agentic::Social::Governance`) — `full_termination` checks `validate_action`
+- `Legion::Extensions::Audit` — audit record on every state change
+
 ## Integration Points
 
 - **lex-agentic-defense**: `Defense::Extinction` sub-module delegates to this gem's runner
 - **lex-privatecore**: level 4 triggers `Privatecore::Client#full_erasure`
-- **lex-governance**: `full_termination` checks `Governance::Runners::Governance.review_transition`
+- **lex-governance**: `full_termination` calls `Governance::Runners::Governance.validate_action(action: "extinction_escalate_4")`; guarded with `defined?`
 - **LegionIO Lifecycle**: `lifecycle.rb` maps `EXTINCTION_MAPPING` transitions to `escalate` calls
 - **Legion::Data::Local**: state persistence (fallback to in-memory)
-- **Legion::Events**: fires `extinction.escalated` and `extinction.deescalated` events
+- **Legion::Events**: fires `extinction.escalated`, `extinction.deescalated`, `extinction.level_N` events
 - **Legion::Extensions::Audit**: `record_audit` for every escalation/de-escalation/termination
 
 ## Actor: ProtocolMonitor

@@ -7,7 +7,7 @@ module Legion
         if defined?(Legion::Extensions::Actors::Every)
           class ProtocolMonitor < Legion::Extensions::Actors::Every # rubocop:disable Legion/Extension/EveryActorRequiresTime
             def runner_class
-              self.class
+              Legion::Extensions::Extinction::Runners::Extinction
             end
 
             def runner_function
@@ -26,7 +26,7 @@ module Legion
             end
 
             def use_runner?
-              false
+              true
             end
 
             def check_subtask?
@@ -37,40 +37,7 @@ module Legion
               false
             end
 
-            def monitor_protocol(**)
-              state = build_state
-              last_change = state[:last_change]
-              stale       = check_stale(last_change)
-
-              log.debug "[extinction] monitor_protocol: level=#{state[:current_level]} stale=#{stale}"
-
-              {
-                success:    true,
-                state:      state,
-                stale:      stale,
-                checked_at: Time.now.utc.iso8601
-              }
-            end
-
             private
-
-            def build_state
-              {
-                current_level: 0,
-                level_name:    :normal,
-                reversible:    true,
-                history_count: 0,
-                last_change:   nil
-              }
-            end
-
-            def check_stale(last_change)
-              return false unless last_change
-
-              threshold_hours = Legion::Extensions::Extinction::Settings.setting(:stale_threshold_hours)
-              changed_at      = Time.parse(last_change[:at]) rescue nil # rubocop:disable Style/RescueModifier
-              changed_at && (Time.now.utc - changed_at) > (threshold_hours * 3600)
-            end
 
             def log
               return Legion::Logging if defined?(Legion::Logging)
