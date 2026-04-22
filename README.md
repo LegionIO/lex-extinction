@@ -12,6 +12,12 @@ Five-level safety containment and termination protocol for LegionIO agents. Prov
 | 3 | Memory lockdown | council + executive | yes |
 | 4 | Cryptographic erasure | physical keyholders | **no** |
 
+## Installation
+
+```ruby
+gem 'lex-extinction'
+```
+
 ## Usage
 
 ```ruby
@@ -39,6 +45,17 @@ client.full_termination(
 )
 ```
 
+## Runner Methods
+
+| Method | Key Args | Returns |
+|--------|----------|---------|
+| `escalate` | `level:, authority:, reason:` | `{ success:, previous_level:, current_level: }` |
+| `deescalate` | `target_level:, authority:, reason:` | `{ success:, previous_level:, current_level: }` |
+| `extinction_status` | — | `{ success:, state:, level_info: }` |
+| `monitor_protocol` | — | `{ success:, state:, stale:, checked_at: }` |
+| `archive_agent` | `agent_id:, reason:, metadata: {}` | `{ success:, archive: }` |
+| `full_termination` | `agent_id:, authority:, reason:` | governance check → archive → escalate(4) |
+
 ## Configuration
 
 ```yaml
@@ -57,9 +74,9 @@ extinction:
 
 ## Architecture Notes
 
-- Level 4 (cryptographic erasure) triggers `lex-privatecore`'s `full_erasure` on all memory traces.
+- Level 4 (cryptographic erasure) triggers `lex-privatecore`'s `full_erasure` on all memory traces (guarded with `defined?`).
 - State is persisted to `Legion::Data::Local` when available; falls back to in-memory storage.
-- All escalations/de-escalations fire `Legion::Events` notifications and write to `Legion::Extensions::Audit`.
+- All escalations/de-escalations fire `Legion::Events` notifications (`extinction.escalated`, `extinction.deescalated`, `extinction.level_N`) and write to `Legion::Extensions::Audit`.
 - `lex-governance` integration is guarded with `defined?()` — the gem functions without it.
 
 ## Development
