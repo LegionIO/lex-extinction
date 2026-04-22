@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.11] - 2026-04-22
+### Fixed
+- ProtocolMonitor actor now delegates to runner instead of reimplementing a stub that always returned level 0
+- Governance gate in `full_termination` calls `validate_action` (exists) instead of `review_transition` (did not exist); rescue now returns `success: false` instead of silently passing
+- Escalation effects emit `Legion::Events` at each level for other extensions to react
+- Cryptographic erasure `rescue nil` replaced with `rescue StandardError => e` + `log.error`
+
 ## [0.2.10] - 2026-04-15
 ### Changed
 - Set `mcp_tools?`, `mcp_tools_deferred?`, and `transport_required?` to `false` — internal cognitive pipeline extension
