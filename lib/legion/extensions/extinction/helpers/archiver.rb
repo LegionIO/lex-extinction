@@ -9,13 +9,12 @@ module Legion
             @archives = []
           end
 
-          def archive(agent_id:, reason:, metadata: {})
-            level = current_protocol_level
+          def archive(agent_id:, reason:, metadata: {}, current_level: 0)
             record = {
               agent_id:       agent_id,
               reason:         reason,
               metadata:       metadata,
-              level:          level,
+              level:          current_level,
               archived_at:    Time.now.utc.iso8601,
               state_snapshot: capture_state_snapshot
             }
@@ -29,10 +28,6 @@ module Legion
           end
 
           private
-
-          def current_protocol_level
-            0
-          end
 
           def capture_state_snapshot
             snapshot = {}

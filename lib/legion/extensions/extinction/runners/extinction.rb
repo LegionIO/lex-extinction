@@ -64,7 +64,8 @@ module Legion
           end
 
           def archive_agent(agent_id:, reason:, metadata: {}, **)
-            record = archiver.archive(agent_id: agent_id, reason: reason, metadata: metadata)
+            record = archiver.archive(agent_id: agent_id, reason: reason, metadata: metadata,
+                                      current_level: protocol_state.current_level)
             record_audit(action: :archive, details: { agent_id: agent_id, reason: reason })
             { success: true, archive: record }
           end
@@ -82,6 +83,12 @@ module Legion
 
             record_audit(action: :full_termination, details: { agent_id: agent_id, authority: authority, reason: reason })
             { success: true, agent_id: agent_id, archive: archive_result[:archive], terminated_at: Time.now.utc.iso8601 }
+          end
+
+          # Reset internal state for test isolation
+          def reset!
+            @protocol_state = nil
+            @archiver = nil
           end
 
           private
