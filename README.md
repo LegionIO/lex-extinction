@@ -61,7 +61,7 @@ client.full_termination(
 ```yaml
 extinction:
   governance_required: true       # check lex-governance before full_termination
-  archive_on_escalate: false      # auto-archive at level >= 3
+  archive_on_escalate: true       # auto-archive at level >= 3
   stale_threshold_hours: 24       # hours before monitor reports stale protocol state
   monitor_interval: 300           # seconds between background monitor ticks
 ```

@@ -9,7 +9,7 @@ module Legion
         class ProtocolState
           MAX_HISTORY = 500
 
-          attr_reader :history
+          attr_reader :current_level, :history
 
           def initialize
             @current_level = 0

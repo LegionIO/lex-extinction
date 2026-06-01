@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.12] - 2026-06-01
+### Fixed
+- Archiver no longer hardcodes `current_protocol_level` to 0; runner passes actual protocol state level
+- Client options (`@opts`) now merge into every runner call instead of being silently ignored
+- Added `reset!` for test isolation; clarified `extend self` + `include` per-instance state behavior
+- README `archive_on_escalate` default aligned with actual code default (`true`)
+
 ## [0.2.11] - 2026-04-22
 ### Fixed
 - ProtocolMonitor actor now delegates to runner instead of reimplementing a stub that always returned level 0
